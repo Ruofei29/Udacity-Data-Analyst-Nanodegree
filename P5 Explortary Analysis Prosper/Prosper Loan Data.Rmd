@@ -1,0 +1,539 @@
+---
+title: "Prosper Loan Data Analysis"
+author: Ruofei Wang
+date: Feb 2017
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+---
+========================================================
+
+This data set contains 113,937 loans with 81 variables on each loan, including loan amount, borrower rate (or interest rate), current loan status, borrower income, borrower employment status, borrower credit history, and the latest payment information.
+
+My analysis focus on the loans that listed after July 2009 since Prosper had its own rating, estimated loss and estimated return after that time.
+
+The followings are my interested variables and I'll explore them one by one:
+
+1. ProsperRating (Alpha): The Prosper Rating assigned at the time the listing was created between AA - HR.  Applicable for loans originated after July 2009.
+2. LoanOriginalAmount: The origination amount of the loan.
+3. Term: The length of the loan expressed in months.
+4. ListingCategory: The category of the listing that the borrower selected when posting their listing: 0 - Not Available, 1 - Debt Consolidation, 2 - Home Improvement, 3 - Business, 4 - Personal Loan, 5 - Student Use, 6 - Auto, 7- Other, 8 - Baby&Adoption, 9 - Boat, 10 - Cosmetic Procedure, 11 - Engagement Ring, 12 - Green Loans, 13 - Household Expenses, 14 - Large Purchases, 15 - Medical/Dental, 16 - Motorcycle, 17 - RV, 18 - Taxes, 19 - Vacation, 20 - Wedding Loans
+5. MonthlyLoanPayment: The scheduled monthly loan payment.
+6. LoanStatus: The current status of the loan: Cancelled,  Chargedoff, Completed, Current, Defaulted, FinalPaymentInProgress, PastDue. The PastDue status will be accompanied by a delinquency bucket.
+7. InvestmentFromFriendsCount: Number of friends that made an investment in the loan.
+8. InvestmentFromFriendsAmount: Dollar amount of investments that were made by friends.
+9. IncomeRange: The income range of the borrower at the time the listing was created.
+10. EmploymentStatus: The employment status of the borrower at the time they posted the listing.
+11. DebtToIncomeRatio: The debt to income ratio of the borrower at the time the credit profile was pulled. This value is Null if the debt to income ratio is not available. This value is capped at 10.01 (any debt to income ratio larger than 1000% will be returned as 1001%).
+12. IsBorrowerHomeowner: A Borrower will be classified as a homowner if they have a mortgage on their credit profile or provide documentation confirming they are a homeowner.
+13. CreditScoreRangeLower: The lower value representing the range of the borrower's credit score as provided by a consumer credit rating agency.
+14. CreditScoreRangeUpper: The upper value representing the range of the borrower's credit score as provided by a consumer credit rating agency. 
+15. TotalInquiries: Total number of inquiries at the time the credit profile was pulled.
+16. DelinquenciesLast7Years: Number of delinquencies in the past 7 years at the time the credit profile was pulled.
+17. BankcardUtilization: The percentage of available revolving credit that is utilized at the time the credit profile was pulled.
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+ 
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+library(ggplot2)
+library(knitr)
+library(ggthemes)
+library(dplyr)
+library(corrplot)
+theme_set(theme_economist())
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+setwd('C:/Users/Ruofei/Desktop/machine learning/projects/Prosper Loan Data')
+pl<-read.csv('prosperLoanData.csv')
+# There are 81 variables in this dataset, and I will select my different variables to answer different kinds of questions.
+
+```
+
+# Univariate Plots Section
+```{r echo=FALSE, Univariate_Plots}
+# Since prosper rating only exists after July 2009, and there are several varialbes like prosper rating. I'm going to subset the data set and do the analysis on this subset data. 
+pl$ListingCreationDate <- as.Date(pl$ListingCreationDate, 
+                                  format = "%Y-%m-%d %H:%M:%S") 
+
+pl=subset(pl,ListingCreationDate>="2009-08-01")
+dim(pl)
+
+
+```
+
+We can see that there are 84672 listing loans after July 2009.
+
+## Characteristics of Loans
+```{r echo=FALSE}
+ggplot(aes(x = ProsperRating..Alpha.), data = pl) +
+  geom_bar() + 
+  scale_x_discrete(limits = c('AA', 'A', 'B', 'C', 'D', 'E', 'HR'))+
+  ggtitle('ProsperRating Distribution')
+```
+
+In this bar chart, we can see that the most common rate of prosper loans is C, followed by A, B and D. The distribution of prosper rating looks like normal distribution. 
+
+```{r echo=FALSE}
+lim <- quantile(pl$LoanOriginalAmount, 0.99, na.rm = TRUE)
+ggplot(aes(x = LoanOriginalAmount), data = pl) +
+  geom_histogram(binwidth=1000) +
+  scale_x_continuous(
+    limits = c(0, lim),
+    breaks = seq(0, lim, 1000))+
+    ggtitle('Loan Amount Distribution')
+summary(pl$LoanOriginalAmount)
+```
+
+There are three sharp bars in this histogram, which are $4,000, $10,000, and $15,000. I understand that people tend to find whole numbers like 10,000, 15,000 and 20,000. But it's quite intesting to have $4,000, the most common loan amount among those loans.
+
+```{r echo=FALSE}
+pl$Term<-factor(pl$Term)
+
+ggplot(data=pl,aes(Term)) + 
+  geom_bar()+
+  ggtitle('Loan Term Distribution')
+
+summary(pl$Term)
+
+```
+
+Prosper provides three kinds of loan term, 12 month, 36 months and 60 months. Among those, the most common one is 36 months.
+
+```{r echo=FALSE}
+pl$ListingCategory..numeric.<-factor(pl$ListingCategory..numeric.)
+ggplot(aes(x = ListingCategory..numeric.), data = pl) +
+  geom_bar()+
+  ggtitle('Listing Category Distribution')
+
+summary(pl$ListingCategory..numeric.)
+
+```
+
+We can see that the most common reason to get a loan from Prosper is debt conslidation. More than 50% of the loans are in this category.
+
+```{r echo=FALSE}
+
+ggplot(data=pl,aes(MonthlyLoanPayment))+
+  geom_histogram(binwidth=50)+
+  scale_x_continuous(limits=c(0,2252),breaks=seq(0,2252,100))+
+  ggtitle('Monthly Loan Payment Distribution')
+
+```
+
+Most of the monthly payment are between $100-200 which make sense. The distribution of monthly payment is positively skewed which means people choose to pay less and make it affordable per month. 
+
+```{r echo=FALSE}
+ggplot(data=pl,aes(LoanStatus))+geom_bar()+
+  ggtitle('Loan Status Distribution')
+table(pl$LoanStatus)
+```
+
+Not surprisingly, most of the loans are current loans which means still in payment. There are decent amount of chargedoff loans and some past-due loans. We can look deeper into those loans in the following analysis.
+
+
+```{r echo=FALSE}
+table(pl$InvestmentFromFriendsCount)
+ggplot(data=pl,aes(InvestmentFromFriendsCount))+
+  geom_histogram(binwidth=1)+
+  scale_x_continuous(limits=c(0,9),breaks=seq(0,9,1))+
+  scale_y_continuous(limits=c(0,600))+
+  ggtitle('Investment From Friends Count')
+
+summary(pl$InvestmentFromFriendsAmount)
+ggplot(data=pl,aes(InvestmentFromFriendsAmount))+
+  geom_histogram(binwidth=1000)+
+  scale_x_continuous(limits=c(0,11000),breaks=seq(0,11000,1000))+
+  scale_y_continuous(limits=c(0,40))+
+  ggtitle('Investment From Friends Amount')
+
+```
+
+There are only about 600 investment from friends, which is a very small number based on 84672 observations. Most of the investment from friends are around $2,000 range. We may futher exlpore why those loans get the investment from friends while majority of the loans didn't get.
+
+## Characteristics of Borrowers
+
+After looking into the characteristics of loan ifself, we can start to explore the borrowers info from the dataset.
+
+```{r echo=FALSE}
+
+ggplot(data=pl,aes(IncomeRange)) + 
+  geom_bar()+
+  scale_x_discrete(limits=c("Not displayed",
+                            "Not employed","$0",
+                            "$1-24,999",
+                            "$25,000-49,999",
+                            "$50,000-74,999",
+                            "75,000-99,999",
+                            "$100,000+"))+
+  ggtitle('Borrower Income Range')
+
+ggplot(aes(x = EmploymentStatus), data = pl) +
+  geom_bar() +
+  ggtitle('Borrower Employment Status')
+
+```
+
+Majority of borrowers are employed. The most common range is $50,000 to $99,999 followed by $25,000 to $49,999. There are also many borrowers with income range $100,000+. We could look deeper into these three ranges in the further analysis. 
+
+```{r echo=FALSE}
+
+ggplot(data=pl,aes(DebtToIncomeRatio)) +
+  geom_histogram(binwidth=0.01) + 
+  xlim(0,1.5)+
+  ggtitle('Borrower Debt To Income Ratio')
+
+summary(pl$DebtToIncomeRatio)
+
+```
+
+The debt to income ratio distribution is skewed to the right and median is 0.22.
+
+```{r echo=FALSE}
+
+ggplot(aes(x = IsBorrowerHomeowner), data = pl) +
+  geom_bar() +
+  ggtitle('Borrower Home owner')
+```
+
+There are slightly more home owners among borrowers.
+
+```{r echo=FALSE}
+table(pl$CreditScoreRangeLower)
+ggplot(data=pl,aes(CreditScoreRangeLower))+
+  geom_histogram(binwidth=20)+
+  scale_x_continuous(limits=c(600,880),breaks=seq(600,880,20))+
+  ggtitle('Credit Score Range Lower')
+
+table(pl$CreditScoreRangeUpper)
+ggplot(data=pl,aes(CreditScoreRangeUpper))+
+  geom_histogram(binwidth=20)+
+  scale_x_continuous(limits=c(619,899),breaks=seq(619,899,20))+
+  ggtitle('Credit Score Range Upper')
+```
+
+We can see that the distribution of credit score range lower and upper are the same. And the most common borrowers are 660-700 credit score (lower) and 679-719 (upper).
+
+```{r echo=FALSE}
+
+table(pl$TotalInquiries)
+ggplot(data=pl,aes(TotalInquiries))+
+  geom_histogram(binwidth=5)+
+  scale_x_continuous(limits=c(0,50),breaks=seq(0,50,5))+
+  ggtitle('Total Inquiries')
+
+```
+
+Most of the borrowers's total inquiries are under 5 times.
+
+```{r echo=FALSE}
+table(pl$DelinquenciesLast7Years)
+ggplot(data=pl,aes(DelinquenciesLast7Years))+
+  geom_histogram(binwidth=5)+
+  scale_x_continuous(limits=c(0,50),breaks=seq(0,50,5))+
+  scale_y_continuous(limits=c(0,10000))+
+  ggtitle('Delinquencies last 7 years')
+```
+
+Most of the borrowers's delinquencies are under 5 times.
+
+```{r echo=FALSE}
+summary(pl$BankcardUtilization)
+ggplot(data=pl,aes(BankcardUtilization))+
+  geom_histogram(binwidth=0.1)+
+  scale_x_continuous(limits=c(0,1))+
+  ggtitle('Bankcard Utilization')
+```
+
+Bankcard utilization ranges from 0 to 1 and the most comon one is around 0.9. Median of it is 0.6.
+
+To summary this univariate section, I explored the features of loan (Prosper Rating, Loan amount, Loan term, Listing category, Monthly Loan Payment, loan status, Investment from friends count/amount) and the features of borrowers (Borrower income range, employment status, debt to income ratio, home owner, credit score range, total inquiries, delinquencies, bankcard utilization).
+
+We know from these plots that the prosper rating distribution is almost normal distribution with the most common one C. People usually borrow $4,000, $10,000 and $15,000 from Prosper. Large number of loans are 36 months. The reason why people borrow money from Prosper is Debt conslidation. Majority of loans in our dataset are current in payment loans. Also, the investment from friends are very limited according to the chart.
+
+From the borrower's perspective, common income range is $25,000 to $74,999. Most of them are employed. The median of debt to income ratio is 0.22. Home owner is slighly more than non-home owner. The credit score of those borrowers are positively skewed. The total inquires and deliquencies of borrowers are mostly under 5 times. Additionaly, the median bankcard utilization is 0.6.
+
+I think I will plot more borrower's charasctics if I have time since there are very useful information.
+
+In the following section I'd like to explore more about their relationships and how they impact on each other.
+
+# Bivariate Plots Section
+
+```{r echo=FALSE, Bivariate_Plots}
+#pl<-data.frame(pl)
+pl$ListingCategory..numeric.<-as.numeric(pl$ListingCategory..numeric.)
+selected_vars <- c("ProsperRating..numeric.","DebtToIncomeRatio","ListingCategory..numeric.",
+                   "CreditScoreRangeLower",
+                   "DelinquenciesLast7Years","TotalInquiries","BankcardUtilization")
+
+pl_column_select <- pl[,selected_vars]
+pl_column_select<-na.omit(pl_column_select)
+
+m<-cor(pl_column_select)
+corrplot(m, method="ellipse")
+
+```
+
+Let's see how different borrower's characteristics affect ProsperRating. 
+
+```{r echo=FALSE}
+pl$IncomeRange <-factor(pl$IncomeRange, levels = c("$0", 
+                                                   "$1-24,999", 
+                                                   "$25,000-49,999", 
+                                                   "$50,000-74,999", 
+                                                   "$75,000-99,999", 
+                                                   "$100,000+", 
+                                                   "Not employed"))
+
+ggplot(aes(fill = IncomeRange, x = ProsperRating..Alpha.), data = pl) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by IncomeRange') +
+  scale_fill_brewer(palette= "YlGnBu")
+
+```
+
+In this plot, we can see that with the prosper rating increase, the income range has decresed. That is to say, in the AA rating, there are more high income person while in the HR rating, there are more low income person. 
+
+```{r echo=FALSE}
+ggplot(aes(y = DebtToIncomeRatio, x = ProsperRating..Alpha.), data = pl) +
+  geom_point(alpha = 0.05,position = "jitter") +
+  geom_boxplot()+
+  scale_y_continuous(limits = c(0, quantile(pl$DebtToIncomeRatio, 0.99, na.rm = TRUE)))+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Debt to income ratio')
+```
+
+In this graph, it shows that AA loans have relatively low debt to income ratio. A, B, C, D loans have debt to income ratio ranges from 0.1 to 0.4. The median of the debt to income ratios gets higher as the rating gets lower.
+
+```{r echo=FALSE}
+ggplot(aes(fill = IsBorrowerHomeowner, x = ProsperRating..Alpha.), data = pl) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Home owner')
+```
+
+We can in the AA and A loans, there are more home owners borrowers. However, in other ratings, there are pretty much the same home owners and non-home owners.
+
+```{r echo=FALSE}
+ggplot(aes(y = CreditScoreRangeLower, x = ProsperRating..Alpha.), data = pl) +
+  geom_boxplot() +
+  scale_y_continuous(limits = c(600,900))+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Credit Score')
+
+```
+
+This graph is quite clear. With higher credit score, the borrowers tend to get higher rate. But the interesting thing is that we can see the credit score in HR rate is higher than E rate in total. 
+
+```{r echo=FALSE}
+
+ggplot(aes(y = TotalInquiries, x = ProsperRating..Alpha.), data = pl) +
+  geom_boxplot() +
+  scale_y_continuous(limits = c(0,50))+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Total Inquiries')
+
+```
+
+We can see that for the AA loans, there are much less total inquiries than others. However, we cannot see much difference of total inquiries among other ratings. 
+
+```{r echo=FALSE}
+ggplot(aes(y = DelinquenciesLast7Years, x = ProsperRating..Alpha.), data = pl) +
+  geom_point(alpha = 0.05, position = "jitter") +
+  scale_y_log10()+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Delinquencies')
+
+```
+
+Like Total inquiries, for the AA loans, there are much less delinquencies than others.  This time, E and HR rating also have less delinquencies than other ratings, which does not make sense.
+
+```{r echo=FALSE}
+ggplot(aes(y = BankcardUtilization, x = ProsperRating..Alpha.), data = pl) +
+  geom_point(alpha = 0.05, position = "jitter") +
+  scale_y_continuous(limits = c(0,1))+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Bankcard Utilization')
+```
+
+This plot is very clear, with the bankcard utilization increases, the rating get lower. 
+
+Now let's look at loan status to see whether the prosper rating perform well.
+
+```{r echo=FALSE}
+pl_ls<-subset(pl,LoanStatus!="Current")# I filter out the current loans because we don't know whether they will default or overdue.
+ggplot(aes(fill = LoanStatus, x = ProsperRating..Alpha.), data = pl_ls) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Loan Status')
+```
+
+I leave out the "current" loans and only look at other status. We can see that, with the rating lower, the default rate increases. Also, in the AA rating, there are very little chargeoff, default or past-due loans. 
+
+In this Bivariate analysis section, we explored how different borrower¡¯s characteristics affect ProsperRating. With the prosper rating getting lower, the income range decreases, debt to income ratio increases, credit score decreases, total inquiries increases and bankcard utilization increases.
+
+There are some things need to be investigated more. First, why the credit score in HR looks the same or ever higher than E. Second, how the other borrower's characteristics in dataset impact on the prosper rating.
+
+
+# Multivariate Plots Section
+
+
+
+```{r echo=FALSE, Multivariate_Plots}
+
+ggplot(aes(fill = IncomeRange, x = ProsperRating..Alpha.), data = pl) +
+  geom_bar() +
+  facet_grid(~IsBorrowerHomeowner)+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by IncomeRange and Home Owner')
+
+```
+
+We can see that there are obvious difference for the home owner. The home owner tends to have more A and B rating and have more higher income range such as $50,000 to $74,999.
+
+```{r echo=FALSE}
+ggplot(aes(y = DebtToIncomeRatio, x = ProsperRating..Alpha.), data = pl) +
+  geom_point(alpha = 0.05, position = "jitter") +
+  scale_y_continuous(limits = c(0, quantile(pl$DebtToIncomeRatio, 0.99, na.rm = TRUE)))+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  facet_grid(~IsBorrowerHomeowner)+
+  ggtitle('ProsperRating by Debt to income ratio and Home Owner')
+```
+
+The home owner tend to have larger debt to income ratio, which make sense because they have to pay the morgage. 
+
+```{r echo=FALSE}
+ggplot(aes(y = CreditScoreRangeLower, x = ProsperRating..Alpha.), data = pl) +
+  geom_point(alpha = 0.05, position = "jitter") +
+  scale_y_continuous(limits = c(600,900))+
+  facet_grid(~IsBorrowerHomeowner)+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Credit Score')
+```
+
+In this graph we can see the home owners have higher credit score in an average of 20.
+
+```{r echo=FALSE}
+ggplot(aes(y = DelinquenciesLast7Years, x = ProsperRating..Alpha.), data = pl) +
+  geom_point(alpha = 0.05, position = "jitter") +
+  scale_y_continuous(limits = c(0,80))+
+  facet_grid(~IncomeRange)+
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Delinquencies and Income Range')
+```
+
+The medium range $25,000 to $74,999 have more delinquenices and more C and D ratings.
+
+In this section, we try to figure out the relationship between prosper rating and income range, home owner, debt to income ratio, total inquiries and delinquencies. We found that homeowner tend to have more A and B ratings with higher income, and they also have higher debt to income ratio due to the morgage. Homeowners also have an average of 20 higher credit score.
+
+# Final Plots and Summary
+
+### Plot One
+```{r fig.height=16,echo=FALSE, Plot_One}
+pl$IncomeRange <-factor(pl$IncomeRange, levels = c("$0", "$1-24,999", "$25,000-49,999", "$50,000-74,999", "$75,000-99,999", "$100,000+", "Not employed"))# Give the incomerage a rank so that we can see it clearly in the plot
+pl_4000<-subset(pl,LoanOriginalAmount==4000)
+pl_10000<-subset(pl,LoanOriginalAmount==10000)
+pl_15000<-subset(pl,LoanOriginalAmount==15000)
+p1<-ggplot(aes(fill = IncomeRange, x = ProsperRating..Alpha.), data = pl_4000) +
+    geom_bar() +
+    scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+    ggtitle('ProsperRating by IncomeRange with loan amount = $4000') +
+  scale_fill_brewer(palette= "YlGnBu")
+p2<-ggplot(aes(fill = IncomeRange, x = ProsperRating..Alpha.), data = pl_10000) +
+    geom_bar() +
+    scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+    ggtitle('ProsperRating by IncomeRange with loan amount = $10000') +
+  scale_fill_brewer(palette= "YlGnBu")
+p3<-ggplot(aes(fill = IncomeRange, x = ProsperRating..Alpha.), data = pl_15000) +
+    geom_bar() +
+    scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+    ggtitle('ProsperRating by IncomeRange with loan amount = $15000') +
+  scale_fill_brewer(palette= "YlGnBu")
+grid.arrange(p1, p2, p3, ncol = 1)
+
+```
+
+### Description One
+
+Since we found that $4,000, $10,000 and $15,000 are the most common loan amount in the dataset, I think it's better to subset those loans and compare them with each other. From this plot, we can see that $4,000 loans have more E and HR loans than other two groups. There are no HR rating in $10,000 and $15,000 loans. There are no E rating for $15,000 loans. In the group of $10,000, there are more income range $25,000 to $49,999 loans, while in the $15,000 group, it prefer income range with $50,000 to $74,999. What's more, in the $4,000 group, loans are mostly in E and HR rating.
+
+### Plot Two
+```{r fig.height=16,echo=FALSE, Plot_Two}
+pl_friends<- subset(pl_ls,InvestmentFromFriendsCount>0)
+pl_nofriends<- subset(pl_ls,InvestmentFromFriendsCount==0)
+
+p4<-ggplot(aes(fill = LoanStatus, x = ProsperRating..Alpha.), data = pl_friends) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Loan Status with friends investment')
+p5<-ggplot(aes(fill = LoanStatus, x = ProsperRating..Alpha.), data = pl_nofriends) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Loan Status without friends investment')
+
+grid.arrange(p4, p5, ncol = 1)
+
+```
+
+### Description Two
+
+I think the loans with or without friends may have big differences, that's why I choose to compare them. We can clearly see that the loans with friends' investments have lower chargeoff and default rate. Looks like if a loan was partially invested by a friend will increase its complete rate. That's a good sign and I feel Prosper should put more effort to encourage borrowers' friends to contribute the loans.
+
+
+### Plot Three
+```{r fig.height=16,echo=FALSE, Plot_Three}
+
+pl_debt<-subset(pl_ls,ListingCategory..numeric.==1)# This is the subset with Debt consolidation purpose
+pl_nodebt<-subset(pl_ls,ListingCategory..numeric.!=1)# This is the subset without Debt consolidation purpose
+
+p6<-ggplot(aes(fill = LoanStatus, x = ProsperRating..Alpha.), data = pl_debt) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Loan Status with Debt Consolidation')
+p7<-ggplot(aes(fill = LoanStatus, x = ProsperRating..Alpha.), data = pl_nodebt) +
+  geom_bar() +
+  scale_x_discrete(limits=c('AA', 'A', 'B', 'C', 'D', 'E', 'HR')) +
+  ggtitle('ProsperRating by Loan Status without Debt Consolidation')
+
+grid.arrange(p6, p7, ncol = 1)
+
+```
+
+### Description Three
+
+This plot compares the listing category == Debt consolidation or not. We can find out that there are less AA, B and HR rating for the debt consolidation loans. And debt consolidation loans tend to past due. So one suggestion for Prosper might be that put more operations people to focus on debt solidation loans and keep reminding them to pay back money.
+
+------
+
+# Reflection
+
+This Prosper Loan Data Analysis is quite challenging since there are more than 80000 rows with 81 variables. My difficulties throughout the analysis includes feature selection, plot selection and data cleaning. 
+I feel very happy to find 17 variables that interest me and their relationship with each other through different kinds of exploration. For example, I found the unusual spike of loan amount, the distribution of listing category and so on and so forth. I also noticed the possible correlation between income range, debt to income ratio, credit score, total inquiries, delinquencies, loan status and Prosper rating.
+However, this analysis still have a lot of limitations. First, I only consider the loans that listed after July 2009. Second, I only select 17 variables out of 81. There are still a lot to do with other variables. Third, I ignored the NAs during the analysis, which might result in some bias. 
+Moving forward, I will suggest to do the following things:
+1. Include the loan before July 2009 and get a complete view of the dataset
+2. Explore more variables especially those describe the borrowers' characteristics since that will give us more info about how prosper decide an interest rate
+3. Try to figure out why the NA exists and how to deal with them in a more apporiate way
+4. Add more statistics step into the explortary data analysis, it will bring more insights to the dataset.
+
+I really apprecaite this opportunity to explore the Prosper Loan Data and provide my own insights with a variety of plots. Enjoy and keep learning!
