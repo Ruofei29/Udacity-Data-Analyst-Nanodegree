@@ -22,8 +22,8 @@ This repo inclues 8 projects for Udacity Data Analyst Nanodegree. [Here](https:/
 
 ## Projects
 * Project 0: [P0 Analyze Bay Area Bike Share Data](https://github.com/Ruofei29/Udacity-Data-Analyst-Nanodegree/tree/master/P0%20Analyze%20Bay%20Area%20Bike%20Share%20Data)
-* Project 1: 
-* Project 2: 
+* Project 1: [P1 Test a Perceptual Phenomenon](https://github.com/Ruofei29/Udacity-Data-Analyst-Nanodegree/tree/master/P1%20Test%20a%20Perceptual%20Phenomenon)
+* Project 2: [P2 Titanic Data Analysis]
 * Project 3: 
 * Project 4: 
 * Project 5:
