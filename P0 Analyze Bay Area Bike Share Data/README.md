@@ -1,6 +1,12 @@
-This folder contains files for P0: Analyze Bay Area Bike Share Data.
+# P0: Analyze Bay Area Bike Share Data.
 
-Bay\_Area\_Bike\_Share\_Analysis.ipynb - Main project file.
+Bay Area Bike Share is a company that provides on-demand bike rentals for customers in San Francisco, Redwood City, Palo Alto, Mountain View, and San Jose. Users can unlock bikes from a variety of stations throughout each city, and return them to any station within the same city. Users pay for the service either through a yearly subscription or by purchasing 3-day or 24-hour passes. Users can make an unlimited number of trips, with trips under thirty minutes in length having no additional charge; longer trips will incur overtime fees.
+
+## Analysis
+
+Please open [Bay_Area_Bike_Share_Analysis.ipynb](https://github.com/Ruofei29/Udacity-Data-Analyst-Nanodegree/blob/master/P0%20Analyze%20Bay%20Area%20Bike%20Share%20Data/Bay_Area_Bike_Share_Analysis.ipynb) to see the analysis report.
+
+## Other files
 
 babs\_datacheck.py; babs\_visualizations.py - Supplemental scripts for checking
 data wrangling, reporting of basic statistics, and creation of exploratory bar
