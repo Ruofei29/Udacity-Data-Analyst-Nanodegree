@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="main.css">
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<title>2008 Airports Departure and Arrival Delay</title>
+</head>
+<body>
+	
+<div id="origin-select"></div>
+	
+<script type="text/javascript">
+
+	var width = 900,
+		height = 500,
+		chartWidth = 600,
+		chartHeight = 350;
+	
+
+// Parse the date / time
+//var parseDate = d3.time.format("%B").parse;
+	
+
+		
+//Create SVG element and append map to the SVG
+var base = d3.select("body")
+			.append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			
+			.append("g")
+				.attr("transform", "translate(" + [ width/2-chartWidth/2, height/2 - chartHeight/2] + ")");			
+        
+// Append Div for tooltip to SVG
+var div = d3.select("body")
+		    .append("div")   
+    		.attr("class", "tooltip")               
+    		.style("opacity", 0);
+
+
+var data_by_origin = [],
+	current_origin;
+
+// Date formatter 
+var date_create = d3.time.format("%m/%d/%Y").parse;
+	
+
+var x = d3.time.scale()
+		.range([0, chartWidth]),
+	y = d3.scale.linear()
+		.range([chartHeight, 0 ]);
+
+// Define the axes
+var	xAxis = d3.svg.axis().scale(x)
+	.tickFormat(d3.time.format("%B"))  // Use only Month name
+	.orient("bottom");
+ 
+var	yAxis = d3.svg.axis().scale(y)
+	.orient("left").ticks(10)
+ 
+  
+// Define the lines
+var	depDelayLine = d3.svg.line()
+	.x(function(d) { return x(d.date); })
+	.y(function(d) { return y(d.DepDelay); })
+
+
+var	arrDelayLine = d3.svg.line()
+	.x(function(d) { return x(d.date); })
+	.y(function(d) { return y(d.ArrDelay); });
+
+
+var airports_only = ['ATL', 'LAX', 'ORD', 'DFW', 'JFK', 'DEN', 'SFO', 'CLT', 'LAS', 'PHX' ];
+
+
+d3.csv("data.csv", function(error, data) {
+	if(error) throw error;
+		
+		
+	// Create data array with data records grouped by Origin field	
+	data_by_origin = d3.nest()
+		.key(function(d) { return d.Origin})		
+		.entries( data.filter(function(d) { return airports_only.indexOf(d.Origin) >= 0; }) ) // filter Origins based on list of 10 predefined Origins
+				
+	// call Draw function prediodically in loop
+	data_by_origin.forEach(function(d,i) {
+		setTimeout(function() { return draw(d) }, i * 800);  // 0.8 (x times) sec delay between switching to next Origin
+	})
+
+	setTimeout(function(){ return show_origins(data_by_origin) }, 800 * data_by_origin.length );  //show Origin selection menu after all iterations
+})
+
+
+function show_origins(data_by_origin) {
+	
+	d3.select("#origin-select")
+			.style('left', (width/2-chartWidth/2 + 120) + 'px')
+			.selectAll(".origin-element")
+			.data(data_by_origin)
+			.enter()
+			.append("div")
+				.classed("origin-element",true)	
+				.classed('selected', function(d) { return current_origin === d })	
+				.text(function(d) { return d.key;})
+				.on('click', function(d) { 
+					draw(d);
+					d3.selectAll(".origin-element").classed("selected", function(d) { return current_origin === d })
+				})
+	
+	
+	// show origins 
+	
+	d3.select("#origin-select")
+		.transition()
+		.duration(600)
+		.style('opacity',1)
+			
+		
+}	
+
+function draw(alldata) {
+	
+	var data = alldata.values;
+	
+	data.forEach(function(d) {
+		d.date = date_create(d.Month + "/01/2008") // Create real Date data type based on Month number (dates like 01/01/2008)
+	})
+	
+	current_origin = alldata;
+	
+
+		// calc input domains
+	
+	x.domain(d3.extent(data, function(d) {  return d.date; }));
+		
+	y.domain( [ d3.min(data, function(d) { return Math.min(d.DepDelay,d.ArrDelay); }),  // calc Min and Max values from DepDelay and ArrDelay since we use combined chart for both lines
+				d3.max(data, function(d) { return Math.max(d.DepDelay,d.ArrDelay); }) ]	);
+	
+ 
+/////// Create section
+
+	var chart = base.selectAll('.chart')
+		.data([1]);  // we use [1] as single data entry - since we need to create only one intance of chart (and then it'll be updated )
+
+
+	// Append global Group element containing other chart elements
+						
+	var chartEnter = chart.enter()
+		.append('g')
+		.classed('chart',true);
+			
+	// Add DepDelay line		
+	chartEnter		
+		.append("path")	
+			.attr("class", "line1")
+			.attr("d", depDelayLine(data) );		
+			
+	// Add ArrDelay line		
+	chartEnter
+		.append("path")	
+			.attr("class", "line2")
+			.attr("d", arrDelayLine(data));
+	
+
+	// Add Points for DepDelay		
+	chartEnter		
+		.selectAll(".circle1")	
+			.data(data)
+			.enter()
+			.append("circle")
+				.classed("circle1",true)
+				.attr("r", 4)	
+					
+
+	// Add Points for ArrDelay		
+	chartEnter		
+		.selectAll(".circle2")	
+			.data(data)
+			.enter()
+			.append("circle")
+				.classed("circle2",true)
+				.attr("r", 4)	
+				
+
+	// Add the X Axis
+	chartEnter
+		.append("g")		
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + chartHeight + ")")
+ 
+	// Add the Y Axis
+	chartEnter
+		.append("g")		
+			.attr("class", "y axis")
+
+
+
+/////// Update section		
+
+	// update lines
+
+	chart.select('.line1')		
+		.transition()
+		.duration(400)
+		.attr("d", depDelayLine(data));		
+		
+	chart.select('.line2')		
+		.transition()
+		.duration(400)
+		.attr("d", arrDelayLine(data));	
+
+	// update data linked with points
+
+	chart.selectAll(".circle1")	
+			.data(data)
+
+	chart.selectAll(".circle2")	
+			.data(data)
+
+	// update points
+
+	chart
+		.selectAll(".circle1")	
+			.transition()
+			.duration(400)		
+				.attr("cx", function(d) { return x(d.date)})		
+				.attr("cy", function(d) { return y(d.DepDelay)})
+				
+		
+	 chart
+		.selectAll(".circle2")	
+			.transition()
+			.duration(400)
+				.attr("cx", function(d) { return x(d.date)})		
+				.attr("cy", function(d) { return y(d.ArrDelay)})		
+
+	// update scales
+						
+	chart.select('.y')		
+		.transition()
+		.duration(400)	
+		.call(yAxis);			
+
+	chart.select('.x')		
+		.transition()
+		.duration(400)	
+		.call(xAxis);					
+
+
+	// mouseover event code
+	
+	d3.selectAll('circle')
+		.on('mouseout', function() {
+			div.transition()        
+		.duration(500)      
+		.style("opacity", 0);   						
+	})	
+		
+	d3.selectAll('circle')
+		.on('mouseover', function(d) {
+		
+			var el = d3.select(this),
+				data = el.datum();
+			var delay = el.attr('class') == 'circle1' ? data.DepDelay : data.ArrDelay;
+											
+			div.transition()        
+				.duration(200)      
+				.style("opacity", .9);      
+							
+			div.html( "Delay: " + delay + "<br>Airport: " + d.airport + "<br>Month: " + d3.time.format("%B")(d.date)   )
+				.style("left", (d3.event.pageX + 5) + "px")     
+				.style("top", (d3.event.pageY -53) + "px");   
+						
+		}	
+	)	
+				
+}
+	
+
+
+</script>
+</body>
+</html>

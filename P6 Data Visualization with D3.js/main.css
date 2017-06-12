@@ -1,0 +1,75 @@
+
+	
+
+/* Style for Custom Tooltip */
+div.tooltip {   
+ 	position: absolute;           
+	text-align: center;           
+	width: auto;
+	height: auto;                 
+	padding: 5px;             
+	font: 12px sans-serif;        
+	background: white;   
+	border: 1px solid gray;	
+	border-radius: 7px;           
+	pointer-events: none;         
+}
+
+#origin-select {
+	display: table;
+	position:absolute;
+	text-align:center;
+	top: 35px;
+	opacity: 0;
+}
+
+.origin-element {
+	display: table-cell;
+	border: 1px solid gray;
+	padding: 3px;
+	cursor: pointer;
+	border-radius: 3px;     
+	margin: 5px;    	  	
+}
+	
+.origin-element:hover,.origin-element.selected {
+	background-color: gray;
+}
+
+
+path {  
+  stroke-width: 2;
+  fill: none;
+}   
+
+.line1{
+	stroke: steelblue;
+}
+
+.circle1 {
+	fill :  steelblue;
+	stroke: steelblue;
+}
+
+.line2 {
+	stroke: #c0625e;
+
+}
+.circle2 {
+	fill :  #c0625e;
+	stroke: #c0625e;
+}
+
+
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: grey;
+	stroke-width: 2;
+	shape-rendering: crispEdges;
+} 
+
+.axis text {
+  font: 10px sans-serif;
+}

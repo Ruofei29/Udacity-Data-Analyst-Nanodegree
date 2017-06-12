@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>2008 Flights Data</title>
+
+<!-- css file -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<link rel="stylesheet" href="index_version1.css">
+<!-- js file -->
+<script src="https://code.jquery.com/jquery-1.7.1.js" integrity="sha256-n8wkEJNAWUaIUDnfQoz6fwBRofK9vMWjE6F3qeNfiAY=" crossorigin="anonymous"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<h1><b id='month'>Jan</b>, 2008 Flights Data</h1>
+			</div>
+		</div>
+		<div class="row options">
+			<div class="col-md-8 monthPicker">
+				<button type="button" class="btn btn-default current1" value="1">Jan</button>
+				<button type="button" class="btn btn-default" value="2">Feb</button>
+				<button type="button" class="btn btn-default" value="3">Mar</button>
+				<button type="button" class="btn btn-default" value="4">Apr</button>
+				<button type="button" class="btn btn-default" value="5">May</button>
+				<button type="button" class="btn btn-default" value="6">Jun</button>
+				<button type="button" class="btn btn-default" value="7">Jul</button>
+				<button type="button" class="btn btn-default" value="8">Aug</button>
+				<button type="button" class="btn btn-default" value="9">Sep</button>
+				<button type="button" class="btn btn-default" value="10">Oct</button>
+				<button type="button" class="btn btn-default" value="11">Nov</button>
+				<button type="button" class="btn btn-default" value="12">Dec</button>
+			</div>
+	  	<div class="col-md-4 picker">
+				<button type="button" class="btn btn-default current2" value="Origin.csv">Arrival</button>
+				<button type="button" class="btn btn-default" value="Dest.csv">Depature</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12 maps"></div>
+			<div class="col-md-12 tooltip"></div>
+		</div>
+		<div class="row">
+			<div class="col-md-12 text">
+				<div class="top">
+					<p>Top 3 ...</p>
+				</div>
+				<div class="annotation">
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+<script type="text/javascript">
+
+var monthHeader = $('#month');
+
+var width = 1350,
+    height = 550;
+
+// set projection 3d to 2d
+var projection = d3.geo.mercator();
+
+// set projection as parameter, put it into path
+var path = d3.geo.path()
+  .projection(projection);
+
+d3.json("us.json", function(error, topo) {
+	//console.log(topo);
+	states = topojson.feature(topo, topo.objects.states).features;
+
+  // set projection parameters
+  projection
+    .scale(1000)
+    .center([-106, 37.5])
+
+  // create svg variable
+  var svg = d3.select(".maps").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+	var tip = d3.select(".tooltip")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+	var annotation = $(".annotation");
+  // points
+  // var i = 1;
+	var monthMap = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+
+	// initial
+	var monthIndex = $('.current1').val();
+	var csv = $('.current2').val();
+	drawCircle(csv, monthIndex);
+
+	$('.monthPicker button').click(function(){
+		$('.monthPicker button').css('background-color', 'white');
+		$('.monthPicker button').removeClass('current1');
+		monthHeader.text($(this).text());
+		$(this).css('background-color', 'yellow');
+		$(this).addClass('current1');
+		monthIndex = $(this).val();
+		csv = $('.current2').val();
+		drawCircle(csv, monthIndex);
+	});
+
+	$('.picker button').click(function(){
+		$('.picker button').css('background-color', 'white');
+		$('.picker button').removeClass('current2');
+		$(this).css('background-color', 'yellow');
+		$(this).addClass('current2');
+		csv = $(this).val();
+		monthIndex = $('.current1').val();
+		drawCircle(csv, monthIndex);
+	});
+
+	function drawCircle( documentName, index ){
+	  d3.csv(documentName, function(d) {
+	    return d;
+	  }, month_by_month);
+
+	  function month_by_month(data){
+			plot_points(data, index);
+	  }
+
+		function plot_points( original_data, month ) {
+			data = original_data.filter(function(d){
+				return +d.Month == month;
+			})
+
+			var ArrDelay_max = d3.max( data, function( d ) {
+	      return +d.ArrDelay;
+	    });
+
+	    var ArrDelay_min = d3.min( data, function( d ) {
+	      return +d.ArrDelay;
+	    });
+
+	    var radius = d3.scale.linear( ).domain( [ ArrDelay_min, ArrDelay_max ] ).range( [ 2, 20 ] );
+	    var circles = svg.selectAll("circle").data(data);
+	    circles.exit().remove();
+	    circles.enter().append( "circle" ).attr( 'cx', function( d ) {
+				return projection([+d.long, +d.lat])[ 0 ];
+	    }).attr( 'cy', function( d ) {
+	      return projection([+d.long, +d.lat])[ 1 ];
+	    }).attr( 'r', function( d ) {
+	      return radius( +d.ArrDelay);
+	    }).attr( 'fill', 'red' ).attr( 'stroke', 'black' ).attr( 'stroke-width', 0.7 ).attr( 'opacity', 0.7 )
+			.on("mouseover", function(d) {
+	    	tip.transition()
+	      	.duration(200)
+	        .style("opacity", .9);
+	      tip.html('IATA: '+ d.iata + '<br />' + 'Airport: '+ d.airport + '<br />' + 'State: '+ d.state + '<br />' + 'ArrDelay: ' + d.ArrDelay + 'miles' + '<br />' + 'Month: '+ monthMap[d.Month-1])
+	        .style("left", (d3.event.pageX) + "px")
+	        .style("top", (d3.event.pageY - 28) + "px");
+				annotation.empty();
+				annotation.append('<p>IATA: ' + d.iata + '</p>');
+				annotation.append('<p>Airport: ' + d.airport + '</p>');
+				annotation.append('<p>State: ' + d.state + '</p>');
+				annotation.append('<p>ArrDelay: ' + d.ArrDelay + ' miles</p>');
+				annotation.append('<p>Month: ' + monthMap[d.Month-1] + '</p>');
+			})
+	    .on("mouseout", function(d) {
+	      tip.transition()
+	        .duration(500)
+	        .style("opacity", 0);
+	    });
+
+	  }
+	}
+
+	// add states from topojson
+	svg.selectAll("path")
+      .data(states).enter()
+      .append("path")
+      .attr("class", "feature")
+      .style("fill", "steelblue")
+      .attr("d", path);
+
+  // put boarder around states
+  svg.append("path")
+    	.datum(topojson.mesh(topo, topo.objects.states, function(a, b) { return a !== b; }))
+      .attr("class", "mesh")
+      .attr("d", path);
+
+});
+
+</script>
+
+</body>
+</html>

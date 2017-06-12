@@ -1,0 +1,68 @@
+.feature {
+  fill: none;
+  stroke: grey;
+  stroke-width: 1px;
+    stroke-linejoin: round;
+}
+
+.mesh {
+  fill: none;
+    stroke: lightgrey;
+    stroke-width: 2px;
+    stroke-linejoin: round;
+}
+
+h1 {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.container {
+  margin-top: 20px;
+}
+
+.options {
+  margin: 20px 5px;
+}
+
+.monthPicker {
+  text-align: center;
+}
+
+.monthPicker button:first-child {
+  background-color: yellow;
+}
+
+.picker {
+  padding-left: 80px;
+}
+
+.picker button:first-child{
+  background-color: yellow;
+}
+
+.text {
+  margin-left: 75px;
+  margin-right: 165px;
+  border: 1px solid black;
+  border-radius:5px;
+  padding: 10px;
+}
+
+.tooltip {
+  position: absolute;
+	width: auto;
+	height: auto;
+  overflow: auto;
+	padding: 2px;
+	font: 12px sans-serif;
+	background: white;
+	border: 0px;
+	border-radius: 8px;
+	pointer-events: none;
+}
+
+.maps {
+  padding-left: 0px;
+  margin-left: -70px;
+}
