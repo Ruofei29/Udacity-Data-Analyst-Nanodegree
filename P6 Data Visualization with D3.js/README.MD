@@ -4,7 +4,11 @@
 
 In this project, I chose 2008 flight data (http://stat-computing.org/dataexpo/2009/the-data.html) to do my analysis and data visualization. On the chart, you can see 10 airports with the arrival (red line) and departure (blue line) delay time group by months. I selected 10 busiest airports in US. (https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States)
 
-In summary, departure delay is more common than arrival delay. Also, the busiest months for each airport are always June and December. I think the reason is that December is holiday season and June is a great summer time to take a break for people. Among the 10 airports, ORD and JFK have the highest delay time, which may indicates that they are usually considered as intermediary destination rather than final destination.
+In summary, departure delay is more common than arrival delay. Also, the busiest months for each airport are always June and December. I think the reason is that December is holiday season and June is a great summer time to take a break for people. Among the 10 airports, ORD and JFK have the highest delay time, which may indicate that they are usually considered as intermediary destination rather than final destination and those two airports are busy to coordinate airplanes.
+
+Interesting findings:
+1. For ATL, the highest delay months are July, March and December which is quite different than others. I'm wondering if there are major events in July and March there.
+2. For JFK, the highest delay months are July and August. I guess there are more flights during the summer time since people are travelling at that time.
 
 
 ## Design
