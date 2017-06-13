@@ -4,19 +4,39 @@
 
 In this project, I chose 2008 flight data (http://stat-computing.org/dataexpo/2009/the-data.html) to do my analysis and data visualization. On the chart, you can see 10 airports with the arrival (red line) and departure (blue line) delay time group by months. I selected 10 busiest airports in US. (https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States)
 
+In summary, departure delay is more common than arrival delay. Also, the busiest months for each airport are always June and December. I think the reason is that December is holiday season and June is a great summer time to take a break for people. Among the 10 airports, ORD and JFK have the highest delay time, which may indicates that they are usually considered as intermediary destination rather than final destination.
+
+
 ## Design
 
 First, I used Python to clean the data and get arrival and departure delay time grouped by months and airports. Then I used those data to create a map that could show every airport in the US and its arrival/departure delay time by circles. However, after I collected the feedback, I decided to change my original design to a line chart which will more clear to show my focused points - delay time. So I chose the Top 10 busiest airports in the US to create a simple line chart accross 12 months. Now in this chart, we can clearly see which month has the highest delay time in a particular airport. We can also know that whether it's a good idea to choose a certain airport to be the arrival/departure destination. 
 
 ## Feedback
 
-I've shown my original design (map) to 3 of my friends and got these feedback:
+I've shown my original design (map) to my friends and got these feedback:
 
-1. "The map looks cool but I kind of lost what you want to show in this map. There are too many circles there."
+First person:
+* What do you notice in the visualization? -There are many circles in the map that represents the delay time.
+* What questions do you have about the data? -Where you get the data? 
+* What relationships do you notice? -There are big and small circles.
+* What do you think is the main takeaway from this visualization? -There are too many airports in the US.
+* Is there something you don’t understand in the graphic? -I kind of lost what you want to show in this map. There are too many circles there.
 
-2. "I don't know the point of this map. I know that you want to show the delay time, but there is no difference for each airports in my opinion."
+Second person:
+* What do you notice in the visualization? -A map with many cities/airports
+* What questions do you have about the data? -Is the delay time accurate? Those circles looks no difference. 
+* What relationships do you notice? -Some big cities to have more delay time than others.
+* What do you think is the main takeaway from this visualization? -Not much. Why don't you just let people choose the airport instead of finding the airport on a map?
+* Is there something you don’t understand in the graphic? -I kind of lost what you want to show in this map. There are too many circles there.
 
-3. "Why don't you just let people choose the airport instead of finding the airport on a map?"
+After I changed to the line chart, Third person (reviewer):
+* title and intro paragraph (REQUIRED) - please add these to tell your story and ensure your visualisation is EXPLANATORY
+* y-axis consistency (REQUIRED) - to allow the reader to compare results between airports I'd strongly recommend sticking to one y-axis scale. It looks like Chicago has the most delays?
+* animation (REQUIRED)- I'm wondering how helpful this is? If you are going to keep it in you need to make it clear to the reader what they are seeing by adding a changing textbox which tells them which airport the lines refer to. I'd also recommend making it a bit slower.
+* buttons (text REQUIRED) - Could you go for city names instead of airport acronyms? I understand the full airport name is just too long but city names would be so much easier to handle accessibility-wise? You could add the airport codes into the tooltips instead?
+* buttons (mouseover REQUIRED) - could you make the mouseover colour different to the clicked colour? This is great interaction but slightly confusing when there is one button clicked and you are hovering over another?
+* buttons (spacing) - a small space between each button would make them look less crowded.
+* legend (REQUIRED) - you need to add a legend for your red and blue lines
 
 ## Resources
 
