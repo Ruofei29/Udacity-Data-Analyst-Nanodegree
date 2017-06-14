@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="main">
-	<div class="title">Top 10 Busiest Airports in the US</div>
+	<div class="title">Top 10 Busiest Airports in the US in 2008</div>
 	<div id="origin-select"></div>
 	<div class="intro">
 On the chart, you can see 10 airports with the arrival (red line) and departure (blue line) delay time group by months.
@@ -19,8 +19,8 @@ In summary, departure delay is more common than arrival delay. Also, the busiest
 <div class="findings"><hr>
 Interesting findings:<br>
 
-1. For ATL, the highest delay months are July, March and December which is quite different than others. I'm wondering if there are major events in July and March there.<br>
-2. For JFK, the highest delay months are July and August. I guess there are more flights during the summer time since people are travelling at that time.
+1. For ATL airport in Atlanta, the highest delay months are July, March and December which is quite different than others. I'm wondering if there are major events in July and March there.<br>
+2. For JFK airport in New York, the highest delay months are July and August. I guess there are more flights during the summer time since people are travelling at that time.
 </div>
 
 </div>
@@ -43,7 +43,7 @@ var base = d3.select("body")
 			.attr("height", height)
 			
 			.append("g")
-				.attr("transform", "translate(" + [ width/2-chartWidth/2, height/2 - chartHeight/2] + ")");			
+			.attr("transform", "translate(" + [ width/2-chartWidth/2, height/2 - chartHeight/2] + ")");			
         
 // Append Div for tooltip to SVG
 var div = d3.select("body")
@@ -327,7 +327,7 @@ function draw(alldata) {
 				data = el.datum();
 								
 			//show Delay type based on class of circle element	
-			var delay = el.attr('class') == 'circle1' ? "Departure Delay: " + (+data.DepDelay).toFixed(3) : "Arrival Delay: " + (+data.ArrDelay).toFixed(3);
+			var delay = el.attr('class') == 'circle1' ? "Departure Delay: " + (+data.DepDelay).toLocaleString() : "Arrival Delay: " + (+data.ArrDelay).toLocaleString();
 											
 			div.transition()        
 				.duration(200)      
