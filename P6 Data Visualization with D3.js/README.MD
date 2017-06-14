@@ -15,6 +15,14 @@ Interesting findings:
 
 First, I used Python to clean the data and get arrival and departure delay time grouped by months and airports. Then I used those data to create a map that could show every airport in the US and its arrival/departure delay time by circles. However, after I collected the feedback, I decided to change my original design to a line chart which will more clear to show my focused points - delay time. So I chose the Top 10 busiest airports in the US to create a simple line chart accross 12 months. Now in this chart, we can clearly see which month has the highest delay time in a particular airport. We can also know that whether it's a good idea to choose a certain airport to be the arrival/departure destination. 
 
+Elements on the chart:
+* X axis - 12 months
+* Y axis - Delay time by minutes
+* Legend - Red line: Arrival Delay time; Blue line: Departure Delay time
+* Buttons - It was initially airport codes; then I changed it to city names to make it more clear to audience
+* Summary & Findings - Added after the review
+* Color coding - Background: white; text: black; line & points: red or blue
+
 ## Feedback
 
 I've shown my original design (map) to my friends and got these feedback:
