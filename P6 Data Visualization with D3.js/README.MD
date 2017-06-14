@@ -22,6 +22,7 @@ Elements on the chart:
 * Buttons - It was initially airport codes; then I changed it to city names to make it more clear to audience
 * Summary & Findings - Added after the review
 * Color coding - Background: white; text: black; line & points: red or blue
+* Tooltip (example) - Delay Time: "100,000 mins"; Airport: "San Francisco International"; Month: "June"
 
 ## Feedback
 
