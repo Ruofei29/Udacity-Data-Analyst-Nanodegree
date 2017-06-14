@@ -2,29 +2,13 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<link rel="stylesheet" href="main.css">
+	<link rel="stylesheet" href="index_version2.css">
 	<script src="http://d3js.org/d3.v3.min.js"></script>
-	<title>Top 10 Busiest Airports in the US in 2008</title>
+	<title>2008 Airports Departure and Arrival Delay</title>
 </head>
 <body>
-<div id="main">
-	<div class="title">Top 10 Busiest Airports in the US</div>
-	<div id="origin-select"></div>
-	<div class="intro">
-On the chart, you can see 10 airports with the arrival (red line) and departure (blue line) delay time group by months.
-I selected 10 busiest airports in US. (<a href="https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States">https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States</a>)<br>
-<br>
-In summary, departure delay is more common than arrival delay. Also, the busiest months for each airport are always June and December. I think the reason is that December is holiday season and June is a great summer time to take a break for people. Among the 10 airports, ORD and JFK have the highest delay time, which may indicates that they are usually considered as intermediary destination rather than final destination.
-</div>
-<div class="findings"><hr>
-Interesting findings:<br>
-
-1. For ATL, the highest delay months are July, March and December which is quite different than others. I'm wondering if there are major events in July and March there.<br>
-2. For JFK, the highest delay months are July and August. I guess there are more flights during the summer time since people are travelling at that time.
-</div>
-
-</div>
-
+	
+<div id="origin-select"></div>
 	
 <script type="text/javascript">
 
@@ -33,12 +17,15 @@ Interesting findings:<br>
 		chartWidth = 600,
 		chartHeight = 350;
 	
+
+// Parse the date / time
+//var parseDate = d3.time.format("%B").parse;
 	
+
 		
 //Create SVG element and append map to the SVG
 var base = d3.select("body")
 			.append("svg")
-			.classed('svg',true)
 			.attr("width", width)
 			.attr("height", height)
 			
@@ -52,23 +39,12 @@ var div = d3.select("body")
     		.style("opacity", 0);
 
 
-d3.select("#main")
-	.style('left', (width/2-chartWidth/2 + 30) + 'px')
-	.style('width', (chartWidth) + 'px')
-
-d3.select(".intro")
-	.style('top', (chartHeight + 200) + 'px')
-
 var data_by_origin = [],
-	current_origin,
-	animation_time = 900,
-	animation_frame_time = animation_time * 1.5
+	current_origin;
 
 // Date formatter 
 var date_create = d3.time.format("%m/%d/%Y").parse;
 	
-	
-// X and Y scales	
 
 var x = d3.time.scale()
 		.range([0, chartWidth]),
@@ -95,8 +71,6 @@ var	arrDelayLine = d3.svg.line()
 	.y(function(d) { return y(d.ArrDelay); });
 
 
-// List of airports to show
-
 var airports_only = ['ATL', 'LAX', 'ORD', 'DFW', 'JFK', 'DEN', 'SFO', 'CLT', 'LAS', 'PHX' ];
 
 
@@ -107,34 +81,34 @@ d3.csv("data.csv", function(error, data) {
 	// Create data array with data records grouped by Origin field	
 	data_by_origin = d3.nest()
 		.key(function(d) { return d.Origin})		
-		.entries( data.filter(function(d) { return airports_only.indexOf(d.Origin) >= 0; }) ) // filter Origins based on list of 10 predefined Airports/Origins
-						
-	// call Draw function for every Origin periodically in loop 
+		.entries( data.filter(function(d) { return airports_only.indexOf(d.Origin) >= 0; }) ) // filter Origins based on list of 10 predefined Origins
+				
+	// call Draw function prediodically in loop
 	data_by_origin.forEach(function(d,i) {
-		setTimeout(function() { return draw(d) }, i * animation_frame_time);  //  time to show each Origin frame
+		setTimeout(function() { return draw(d) }, i * 800);  // 0.8 (x times) sec delay between switching to next Origin
 	})
 
-	setTimeout(function(){ return show_origins(data_by_origin) }, animation_frame_time * data_by_origin.length );  //show Origin selection menu after all iterations
+	setTimeout(function(){ return show_origins(data_by_origin) }, 800 * data_by_origin.length );  //show Origin selection menu after all iterations
 })
 
 
 function show_origins(data_by_origin) {
 	
-	
-	d3.select("#origin-select")			
+	d3.select("#origin-select")
+			.style('left', (width/2-chartWidth/2 + 120) + 'px')
 			.selectAll(".origin-element")
 			.data(data_by_origin)
 			.enter()
 			.append("div")
 				.classed("origin-element",true)	
 				.classed('selected', function(d) { return current_origin === d })	
-				.text(function(d) { return d.values[0].city;})
-				.attr('title',function(d) { return d.key;})
+				.text(function(d) { return d.key;})
 				.on('click', function(d) { 
 					draw(d);
 					d3.selectAll(".origin-element").classed("selected", function(d) { return current_origin === d })
 				})
-		
+	
+	
 	// show origins 
 	
 	d3.select("#origin-select")
@@ -156,20 +130,12 @@ function draw(alldata) {
 	current_origin = alldata;
 	
 
-	// calc input domains
+		// calc input domains
 	
 	x.domain(d3.extent(data, function(d) {  return d.date; }));
-	
-	// calc Min and Max values from DepDelay and ArrDelay since we use combined chart for both lines
-	
-	var ymin = -15000,
-		ymax = 900000,
-		//ymin = d3.min(data, function(d) { return Math.min(d.DepDelay,d.ArrDelay) }),
-		//ymax = 	d3.max(data, function(d) { return Math.max(d.DepDelay,d.ArrDelay); }),
-		padding = (ymax-ymin)/100 * 10; // 10% padding
-			
-	y.domain( [ ymin-padding, ymax+padding ] );   
-				
+		
+	y.domain( [ d3.min(data, function(d) { return Math.min(d.DepDelay,d.ArrDelay); }),  // calc Min and Max values from DepDelay and ArrDelay since we use combined chart for both lines
+				d3.max(data, function(d) { return Math.max(d.DepDelay,d.ArrDelay); }) ]	);
 	
  
 /////// Create section
@@ -183,17 +149,7 @@ function draw(alldata) {
 	var chartEnter = chart.enter()
 		.append('g')
 		.classed('chart',true);
-
-
-	// Add Airport name
-	chartEnter		
-		.append("text")	
-			.attr("class", "airport")
-			.style('text-anchor','middle')
-			.attr('x', chartWidth/2)
-			.attr('y', chartHeight + 50)
-
-
+			
 	// Add DepDelay line		
 	chartEnter		
 		.append("path")	
@@ -232,41 +188,13 @@ function draw(alldata) {
 		.append("g")		
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + chartHeight + ")")
-			.call(xAxis);			
  
 	// Add the Y Axis
 	chartEnter
 		.append("g")		
 			.attr("class", "y axis")
-			.call(yAxis);			
 
-	// Add legend
-	
-	chartEnter
-		.append("g")
-			.selectAll('.legend')
-				.data([ {text: 'Arrival', color: '#c0625e'}, {text: 'Departure', color: 'steelblue'}])
-				.enter()
-					.append('g')
-						.classed('legend',true)
-						.attr("transform", function(d,i) { return "translate(" + [10, 20+i*20] + ")" })
-						.each(function(d) {
-							var el = d3.select(this);
-							
-							el.append('line')
-								.attr('x1',17)
-								.attr('y1',0)
-								.attr('x2',56)
-								.attr('y2',0)
-								.style('stroke', d.color)
-								.style('stroke-width', 3)
-								
-							el.append('text')
-								.attr('x',63)
-								.attr('y',4)
-								.text(d.text);	
-						})	
-	
+
 
 /////// Update section		
 
@@ -274,31 +202,36 @@ function draw(alldata) {
 
 	chart.select('.line1')		
 		.transition()
-		.duration(animation_time)
+		.duration(400)
 		.attr("d", depDelayLine(data));		
 		
 	chart.select('.line2')		
 		.transition()
-		.duration(animation_time)
+		.duration(400)
 		.attr("d", arrDelayLine(data));	
 
+	// update data linked with points
+
+	chart.selectAll(".circle1")	
+			.data(data)
+
+	chart.selectAll(".circle2")	
+			.data(data)
 
 	// update points
 
 	chart
 		.selectAll(".circle1")	
-			.data(data)
 			.transition()
-			.duration(animation_time)		
+			.duration(400)		
 				.attr("cx", function(d) { return x(d.date)})		
 				.attr("cy", function(d) { return y(d.DepDelay)})
 				
 		
 	 chart
 		.selectAll(".circle2")	
-			.data(data)
 			.transition()
-			.duration(animation_time)
+			.duration(400)
 				.attr("cx", function(d) { return x(d.date)})		
 				.attr("cy", function(d) { return y(d.ArrDelay)})		
 
@@ -306,43 +239,41 @@ function draw(alldata) {
 						
 	chart.select('.y')		
 		.transition()
-		.duration(animation_time)	
+		.duration(400)	
 		.call(yAxis);			
-		
-		
-	// update Airport name
-	
-	chart.select('.airport')
-		.text("Airport: " + data[0].airport + ', City: ' + data[0].city);
-							
+
+	chart.select('.x')		
+		.transition()
+		.duration(400)	
+		.call(xAxis);					
 
 
-	// mouseover/mouseout event code - to show/hide tooltips
+	// mouseover event code
 	
-				
+	d3.selectAll('circle')
+		.on('mouseout', function() {
+			div.transition()        
+		.duration(500)      
+		.style("opacity", 0);   						
+	})	
+		
 	d3.selectAll('circle')
 		.on('mouseover', function(d) {
 		
 			var el = d3.select(this),
 				data = el.datum();
-								
-			//show Delay type based on class of circle element	
-			var delay = el.attr('class') == 'circle1' ? "Departure Delay: " + (+data.DepDelay).toFixed(3) : "Arrival Delay: " + (+data.ArrDelay).toFixed(3);
+			var delay = el.attr('class') == 'circle1' ? data.DepDelay : data.ArrDelay;
 											
 			div.transition()        
 				.duration(200)      
 				.style("opacity", .9);      
 							
-			div.html( delay + " mins<br>Airport: " + d.airport + "<br>Month: " + d3.time.format("%B")(d.date)   )
+			div.html( "Delay: " + delay + "<br>Airport: " + d.airport + "<br>Month: " + d3.time.format("%B")(d.date)   )
 				.style("left", (d3.event.pageX + 5) + "px")     
 				.style("top", (d3.event.pageY -53) + "px");   
 						
-			})
-		.on('mouseout', function() {
-			div.transition()        
-			.duration(500)      
-			.style("opacity", 0);   						
-			})	
+		}	
+	)	
 				
 }
 	

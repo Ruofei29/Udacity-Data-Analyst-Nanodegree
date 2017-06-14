@@ -1,45 +1,5 @@
 
-
-.svg {
-	position:absolute;
-	top:50px;
-	z-index: -100;
-}	
-
-#main {
-	text-align:center;
-	position:absolute;
-}
-
-.legend-text {
-	font: 12px sans-serif; 
-}
-
-
-.airport {
-	font: 17px sans-serif; 
-}
-.title {
-	font: 29px sans-serif;        
-	text-align:center;
-	padding-bottom:10px;
-}	
-
-.intro {
-	position:absolute;
-	top: 300px;
-	font: 14px sans-serif;  
-	line-height: 18px;      
-	text-align: left;
-}
-
-.findings {
-	position:absolute;
-	top: 750px;
-	font: 13px sans-serif;  
-	line-height: 18px;      
-	text-align: left;
-}
+	
 
 /* Style for Custom Tooltip */
 div.tooltip {   
@@ -56,28 +16,24 @@ div.tooltip {
 }
 
 #origin-select {
-	display: inline-block;
+	display: table;
+	position:absolute;
+	text-align:center;
+	top: 35px;
 	opacity: 0;
-	
 }
 
 .origin-element {
-	display: inline-block;
+	display: table-cell;
 	border: 1px solid gray;
 	padding: 3px;
 	cursor: pointer;
 	border-radius: 3px;     
-	margin: 3px;    	  	
+	margin: 5px;    	  	
 }
 	
-
-.origin-element:hover {
-	background-color: #DDD;
-}
-
-.origin-element.selected {
-	background-color: #555;
-	color: #F5F5F5;
+.origin-element:hover,.origin-element.selected {
+	background-color: gray;
 }
 
 
