@@ -1,6 +1,6 @@
 # Udacity-Data-Analyst-Nanodegree
 
-Successfully completed this Nanodegree on May 24, 2017, see the [certificate](https://drive.google.com/file/d/0B1_9KVZI9SLVTkdKN1J4M2FhS3M/view?usp=sharing)
+Successfully completed this Nanodegree on Jun 15, 2017, see the [certificate](https://drive.google.com/file/d/0B1_9KVZI9SLVTkdKN1J4M2FhS3M/view?usp=sharing)
 
 ## About
 This repo inclues 8 projects for Udacity Data Analyst Nanodegree. [Here](https://www.udacity.com/course/data-analyst-nanodegree--nd002) is the introduction of Nanodegree.
